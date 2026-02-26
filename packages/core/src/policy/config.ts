@@ -34,6 +34,10 @@ import {
   EDIT_TOOL_NAME,
   READ_FILE_TOOL_NAME,
   LS_TOOL_NAME,
+  GLOB_TOOL_NAME,
+  GREP_TOOL_NAME,
+  READ_MANY_FILES_TOOL_NAME,
+  WEB_FETCH_TOOL_NAME,
 } from '../tools/tool-names.js';
 import { isNodeError } from '../utils/errors.js';
 
@@ -479,6 +483,10 @@ export function createPolicyUpdater(
           EDIT_TOOL_NAME,
           READ_FILE_TOOL_NAME,
           LS_TOOL_NAME,
+          GLOB_TOOL_NAME,
+          GREP_TOOL_NAME,
+          READ_MANY_FILES_TOOL_NAME,
+          WEB_FETCH_TOOL_NAME,
         ];
         if (
           sensitiveTools.includes(toolName) &&

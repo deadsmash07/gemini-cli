@@ -27,6 +27,10 @@ import {
   EDIT_TOOL_NAMES,
   READ_FILE_TOOL_NAME,
   LS_TOOL_NAME,
+  GLOB_TOOL_NAME,
+  GREP_TOOL_NAME,
+  READ_MANY_FILES_TOOL_NAME,
+  WEB_FETCH_TOOL_NAME,
 } from '../tools/tool-names.js';
 import type { ValidatingToolCall } from './types.js';
 
@@ -200,6 +204,35 @@ async function handleStandardPolicyUpdate(
       if (typeof dirPath === 'string') {
         const escapedPath = dirPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         options.argsPattern = `.*"dir_path":"${escapedPath}".*`;
+      }
+    } else if (
+      (tool.name === GLOB_TOOL_NAME || tool.name === GREP_TOOL_NAME) &&
+      hasParams(tool)
+    ) {
+      const dirPath = tool.params['dir_path'];
+      if (typeof dirPath === 'string') {
+        const escapedPath = dirPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        options.argsPattern = `.*"dir_path":"${escapedPath}".*`;
+      }
+    } else if (tool.name === READ_MANY_FILES_TOOL_NAME && hasParams(tool)) {
+      const include = tool.params['include'];
+      if (Array.isArray(include) && include.length > 0) {
+        // Use a pattern that matches at least one of the included files/patterns
+        const escapedInclude = String(include[0]).replace(
+          /[.*+?^${}()|[\]\\]/g,
+          '\\$&',
+        );
+        options.argsPattern = `.*"include":\\[.*"${escapedInclude}".*\\].*`;
+      }
+    } else if (tool.name === WEB_FETCH_TOOL_NAME && hasParams(tool)) {
+      const prompt = tool.params['prompt'];
+      if (typeof prompt === 'string') {
+        // Find the first URL-like string in the prompt to scope the policy
+        const urlMatch = prompt.match(/https?:\/\/[^\s]+/);
+        if (urlMatch) {
+          const escapedUrl = urlMatch[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          options.argsPattern = `.*${escapedUrl}.*`;
+        }
       }
     }
 

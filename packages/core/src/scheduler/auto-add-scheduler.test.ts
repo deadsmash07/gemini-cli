@@ -18,6 +18,10 @@ import {
   READ_FILE_TOOL_NAME,
   LS_TOOL_NAME,
   WRITE_FILE_TOOL_NAME,
+  GLOB_TOOL_NAME,
+  GREP_TOOL_NAME,
+  READ_MANY_FILES_TOOL_NAME,
+  WEB_FETCH_TOOL_NAME,
 } from '../tools/tool-names.js';
 import type { ReadFileTool } from '../tools/read-file.js';
 import type { LSTool } from '../tools/ls.js';
@@ -154,6 +158,114 @@ describe('Scheduler Auto-add Policy Logic', () => {
         type: MessageBusType.UPDATE_POLICY,
         toolName: LS_TOOL_NAME,
         argsPattern: expect.stringMatching(/src/),
+      }),
+    );
+  });
+
+  it('should generate specific argsPattern for glob', async () => {
+    const mockConfig = {
+      getAutoAddPolicy: vi.fn().mockReturnValue(true),
+      setApprovalMode: vi.fn(),
+    } as unknown as Mocked<Config>;
+    const mockMessageBus = {
+      publish: vi.fn(),
+    } as unknown as Mocked<MessageBus>;
+    const tool = {
+      name: GLOB_TOOL_NAME,
+      params: { dir_path: './packages' },
+    } as unknown as AnyDeclarativeTool;
+
+    await updatePolicy(tool, ToolConfirmationOutcome.ProceedAlways, undefined, {
+      config: mockConfig,
+      messageBus: mockMessageBus,
+    });
+
+    expect(mockMessageBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: MessageBusType.UPDATE_POLICY,
+        toolName: GLOB_TOOL_NAME,
+        argsPattern: expect.stringMatching(/packages/),
+      }),
+    );
+  });
+
+  it('should generate specific argsPattern for grep_search', async () => {
+    const mockConfig = {
+      getAutoAddPolicy: vi.fn().mockReturnValue(true),
+      setApprovalMode: vi.fn(),
+    } as unknown as Mocked<Config>;
+    const mockMessageBus = {
+      publish: vi.fn(),
+    } as unknown as Mocked<MessageBus>;
+    const tool = {
+      name: GREP_TOOL_NAME,
+      params: { dir_path: './src' },
+    } as unknown as AnyDeclarativeTool;
+
+    await updatePolicy(tool, ToolConfirmationOutcome.ProceedAlways, undefined, {
+      config: mockConfig,
+      messageBus: mockMessageBus,
+    });
+
+    expect(mockMessageBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: MessageBusType.UPDATE_POLICY,
+        toolName: GREP_TOOL_NAME,
+        argsPattern: expect.stringMatching(/src/),
+      }),
+    );
+  });
+
+  it('should generate specific argsPattern for read_many_files', async () => {
+    const mockConfig = {
+      getAutoAddPolicy: vi.fn().mockReturnValue(true),
+      setApprovalMode: vi.fn(),
+    } as unknown as Mocked<Config>;
+    const mockMessageBus = {
+      publish: vi.fn(),
+    } as unknown as Mocked<MessageBus>;
+    const tool = {
+      name: READ_MANY_FILES_TOOL_NAME,
+      params: { include: ['src/**/*.ts', 'test/'] },
+    } as unknown as AnyDeclarativeTool;
+
+    await updatePolicy(tool, ToolConfirmationOutcome.ProceedAlways, undefined, {
+      config: mockConfig,
+      messageBus: mockMessageBus,
+    });
+
+    expect(mockMessageBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: MessageBusType.UPDATE_POLICY,
+        toolName: READ_MANY_FILES_TOOL_NAME,
+        argsPattern: expect.stringMatching(/include.*src.*ts/),
+      }),
+    );
+  });
+
+  it('should generate specific argsPattern for web_fetch', async () => {
+    const mockConfig = {
+      getAutoAddPolicy: vi.fn().mockReturnValue(true),
+      setApprovalMode: vi.fn(),
+    } as unknown as Mocked<Config>;
+    const mockMessageBus = {
+      publish: vi.fn(),
+    } as unknown as Mocked<MessageBus>;
+    const tool = {
+      name: WEB_FETCH_TOOL_NAME,
+      params: { prompt: 'Summarize https://example.com/page' },
+    } as unknown as AnyDeclarativeTool;
+
+    await updatePolicy(tool, ToolConfirmationOutcome.ProceedAlways, undefined, {
+      config: mockConfig,
+      messageBus: mockMessageBus,
+    });
+
+    expect(mockMessageBus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: MessageBusType.UPDATE_POLICY,
+        toolName: WEB_FETCH_TOOL_NAME,
+        argsPattern: expect.stringContaining('example\\.com'),
       }),
     );
   });
