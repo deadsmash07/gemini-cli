@@ -15,6 +15,7 @@ import {
 } from 'vitest';
 import * as fs from 'node:fs/promises';
 import { createPolicyUpdater } from './config.js';
+import { SHELL_TOOL_NAME } from '../tools/tool-names.js';
 import {
   MessageBusType,
   type UpdatePolicy,
@@ -69,12 +70,8 @@ describe('Policy Auto-add Safeguards', () => {
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
-
-  async function wait() {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
 
   it('should skip persistence for wildcard toolName', async () => {
     createPolicyUpdater(policyEngine, messageBus, storage);
@@ -120,9 +117,9 @@ describe('Policy Auto-add Safeguards', () => {
       persist: true,
     });
 
-    await wait();
-
-    expect(fs.open).toHaveBeenCalled();
+    await vi.waitFor(() => {
+      expect(fs.open).toHaveBeenCalled();
+    });
     expect(fs.rename).toHaveBeenCalledWith(
       expect.stringContaining('autosaved.toml'),
       '/tmp/policies/autosaved.toml',
@@ -134,16 +131,19 @@ describe('Policy Auto-add Safeguards', () => {
 
     await updateCallback({
       type: MessageBusType.UPDATE_POLICY,
-      toolName: 'shell',
+      toolName: SHELL_TOOL_NAME,
       persist: true,
     });
 
-    await wait();
+    await vi.waitFor(() => {
+      expect(coreEvents.emitFeedback).toHaveBeenCalledWith(
+        'warning',
+        expect.stringContaining(
+          `Broad approval for "${SHELL_TOOL_NAME}" was not auto-saved`,
+        ),
+      );
+    });
 
     expect(fs.open).not.toHaveBeenCalled();
-    expect(coreEvents.emitFeedback).toHaveBeenCalledWith(
-      'warning',
-      expect.stringContaining('Broad approval for "shell" was not auto-saved'),
-    );
   });
 });

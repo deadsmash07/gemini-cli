@@ -28,7 +28,13 @@ import { type MessageBus } from '../confirmation-bus/message-bus.js';
 import { coreEvents } from '../utils/events.js';
 import { debugLogger } from '../utils/debugLogger.js';
 import { SHELL_TOOL_NAMES } from '../utils/shell-utils.js';
-import { SHELL_TOOL_NAME } from '../tools/tool-names.js';
+import {
+  SHELL_TOOL_NAME,
+  WRITE_FILE_TOOL_NAME,
+  EDIT_TOOL_NAME,
+  READ_FILE_TOOL_NAME,
+  LS_TOOL_NAME,
+} from '../tools/tool-names.js';
 import { isNodeError } from '../utils/errors.js';
 
 import { isDirectorySecure } from '../utils/security.js';
@@ -468,11 +474,11 @@ export function createPolicyUpdater(
 
         // Sensitive tools MUST have a specific pattern or prefix to be auto-saved
         const sensitiveTools = [
-          'shell',
-          'write_file',
-          'edit',
-          'read_file',
-          'list_directory',
+          SHELL_TOOL_NAME,
+          WRITE_FILE_TOOL_NAME,
+          EDIT_TOOL_NAME,
+          READ_FILE_TOOL_NAME,
+          LS_TOOL_NAME,
         ];
         if (
           sensitiveTools.includes(toolName) &&
